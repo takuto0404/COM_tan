@@ -40,6 +40,7 @@ create table public.questions (
   id uuid primary key default gen_random_uuid(),
   word_id uuid not null unique references public.words (id) on delete cascade,
   sentence_text text not null, -- 穴埋め位置は "{{blank}}" プレースホルダ
+  answer_label text not null, -- 穴に入る語の例文中での表記(活用形。解答表示で全文を復元するのに使う)
   sentence_audio_path text not null -- 穴埋めが埋まった全文の読み上げ音声
 );
 

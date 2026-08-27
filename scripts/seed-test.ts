@@ -9,6 +9,7 @@
  */
 import { execSync } from 'node:child_process'
 import { createClient } from '@supabase/supabase-js'
+import { blankOutWord } from '../src/domain/text/inflection'
 
 // ---------- 接続 ----------
 
@@ -114,7 +115,7 @@ const WORDS: Array<[string, string, string]> = [
   ['horizon', '地平線', 'The sun slowly sank below the horizon.'],
   ['insist', '主張する', 'He insisted on paying for the meal.'],
   ['journey', '旅', 'The journey to the village took three days.'],
-  ['kneel', 'ひざまずく', 'Please kneel down on the mat before the ceremony.'],
+  ['kneel', 'ひざまずく', 'He knelt down to tie his shoes.'],
   ['leisure', '余暇', 'She spends her leisure time reading novels.'],
   ['mature', '成熟した', 'He is very mature for his age.'],
   ['neglect', '怠る', 'Do not neglect your health while working hard.'],
@@ -141,7 +142,7 @@ const WORDS: Array<[string, string, string]> = [
   ['linger', '長居する', 'The smell of coffee lingered in the kitchen.'],
   ['mock', 'あざける', 'It is cruel to mock someone’s accent.'],
   ['nurture', '育む', 'Good teachers nurture curiosity in students.'],
-  ['overcome', '克服する', 'You must overcome your fear of public speaking.'],
+  ['overcome', '克服する', 'She overcame her fear of public speaking.'],
   ['perceive', '知覚する', 'We perceive the world through our senses.'],
   ['quest', '探求', 'His quest for truth lasted a lifetime.'],
   ['retreat', '撤退する', 'The army was forced to retreat from the city.'],
@@ -245,15 +246,19 @@ async function main() {
 
     for (const word of words) {
       const sentence = sentenceByPosition.get(word.position)!
-      const sentenceText = sentence.replace(word.headword, '{{blank}}')
-      if (!sentenceText.includes('{{blank}}')) {
-        throw new Error(`例文に単語が含まれていません: ${word.headword} / ${sentence}`)
+      // 例文中の語は過去形・進行形などに活用していてもよい(domainの語形マッチングで検出)
+      const blanked = blankOutWord(sentence, word.headword)
+      if (!blanked) {
+        throw new Error(
+          `例文に単語(活用形含む)が含まれていません: ${word.headword} / ${sentence}`,
+        )
       }
       const { data: q, error: qErr } = await db
         .from('questions')
         .insert({
           word_id: word.id,
-          sentence_text: sentenceText,
+          sentence_text: blanked.sentenceText,
+          answer_label: blanked.answerLabel,
           sentence_audio_path: `audio/sentences/${setNumber}-${word.position}.mp3`,
         })
         .select()
