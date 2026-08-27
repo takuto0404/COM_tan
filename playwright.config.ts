@@ -22,5 +22,7 @@ export default defineConfig({
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    // テストモード: 音声は無再生・短遅延で完了し、window.__test.audio に履歴を記録
+    env: { NEXT_PUBLIC_TEST_MODE: '1' },
   },
 })
