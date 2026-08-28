@@ -1,8 +1,9 @@
 @import 'tailwindcss';
 
+/* COM単 ブランドトークン(docs/design/ の既存アプリ参照) */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #222222;
 }
 
 @theme inline {
@@ -10,17 +11,22 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* ブランドカラー */
+  --color-brand: #1b309c; /* ネイビー(ヘッダー・主要ボタン) */
+  --color-brand-dark: #121f6b; /* ネイビー濃(グラデ下端) */
+  --color-accent: #ffe100; /* 黄色(ロゴ・進捗バー) */
+  --color-cta: #f08300; /* オレンジ(主CTA・CORRECT・POINT) */
+  --color-cta-dark: #d96f00;
+  --color-emphasis: #e60012; /* 赤(強調単語) */
+  --color-cream: #fffbe6; /* 本文セクション背景 */
+  --color-info: #e2f2fa; /* 案内バナー背景 */
+  --color-bar: #f2f2f2; /* セクション見出し帯 */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, Arial, Helvetica, sans-serif;
 }
