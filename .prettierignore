@@ -1,0 +1,8 @@
+node_modules
+.next
+.npm-cache
+package-lock.json
+supabase/.temp
+docs
+playwright-report
+test-results
