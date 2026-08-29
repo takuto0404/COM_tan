@@ -1,5 +1,6 @@
 /** セット完走の結果画面。Phase 2で「次に進む」(連続進行)とクリア記録に接続する */
 import Link from 'next/link'
+import { SectionBar } from '@/components/ui/SectionBar'
 import type { QuizQuestion, SetResult } from '@/domain/quiz/types'
 
 export function ResultView({
@@ -12,45 +13,52 @@ export function ResultView({
   result: SetResult
 }) {
   return (
-    <main
-      className="mx-auto flex min-h-screen max-w-md flex-col gap-4 p-4"
-      data-testid="quiz-result"
-    >
-      <h1 className="text-center text-2xl font-bold">セット{setNumber} 完走!</h1>
-      <p className="text-center text-gray-600">
-        初回正解 {result.firstTryCorrectCount} / {questions.length}
-      </p>
+    <div className="flex flex-1 flex-col" data-testid="quiz-result">
+      <SectionBar>セット{setNumber} 結果</SectionBar>
 
-      <ol className="flex flex-col gap-2">
+      <div className="flex flex-col items-center gap-1 border-b border-gray-200 py-5">
+        <p className="text-2xl font-black text-cta">完走!</p>
+        <p className="text-gray-700">
+          初回正解 {result.firstTryCorrectCount} / {questions.length}
+        </p>
+      </div>
+
+      <ol>
         {questions.map((q, i) => {
           const r = result.results[i]
           return (
             <li
               key={q.id}
-              className="flex items-center gap-3 rounded-lg border border-gray-200 p-3"
+              className="flex items-center gap-4 border-b border-gray-200 px-4 py-3"
             >
               <span
                 aria-hidden
-                className={`text-xl font-bold ${r?.firstTryCorrect ? 'text-emerald-600' : 'text-rose-600'}`}
+                className={`w-7 text-center text-2xl font-black ${
+                  r?.firstTryCorrect ? 'text-cta' : 'text-brand'
+                }`}
               >
-                {r?.firstTryCorrect ? '○' : '×'}
+                {r?.firstTryCorrect ? '○' : '✕'}
               </span>
-              <div>
-                <p className="font-bold">{q.headword}</p>
-                {q.meaning && <p className="text-sm text-gray-600">{q.meaning}</p>}
+              <div className="min-w-0 flex-1">
+                <p className="text-lg font-bold">{q.headword}</p>
+                {q.meaning && (
+                  <p className="truncate text-sm text-gray-600">{q.meaning}</p>
+                )}
               </div>
             </li>
           )
         })}
       </ol>
 
-      <Link
-        href="/"
-        data-testid="quiz-go-home"
-        className="mt-auto rounded-xl bg-blue-600 py-4 text-center text-lg font-bold text-white"
-      >
-        ホームへ
-      </Link>
-    </main>
+      <div className="mt-auto px-4 py-4">
+        <Link
+          href="/"
+          data-testid="quiz-go-home"
+          className="block w-full rounded-full bg-linear-to-b from-brand to-brand-dark py-4 text-center text-xl font-bold text-white shadow-[0_5px_0_rgba(0,0,0,0.3)] active:translate-y-0.5 active:shadow-none"
+        >
+          ホームへ
+        </Link>
+      </div>
+    </div>
   )
 }

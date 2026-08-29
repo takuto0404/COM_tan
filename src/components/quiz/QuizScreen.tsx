@@ -3,7 +3,7 @@
 /**
  * クイズ画面のクライアントコンテナ。
  * useQuizSession(hooks層)を駆動し、フェーズごとの表示を組み立てる。
- * 配下の表示部品はpropsのみで描画する。
+ * 配下の表示部品はpropsのみで描画する。デザインは docs/design/ を参照。
  */
 import { useMemo } from 'react'
 import {
@@ -12,6 +12,8 @@ import {
   createTestAudioPort,
   type MediaUrlMap,
 } from '@/data/media/ports'
+import { ProgressBar } from '@/components/ui/ProgressBar'
+import { SectionBar } from '@/components/ui/SectionBar'
 import type { QuizQuestion } from '@/domain/quiz/types'
 import { useQuizSession } from '@/hooks/useQuizSession'
 import { AnswerReveal } from './AnswerReveal'
@@ -40,26 +42,42 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
     images,
   })
 
+  const heading = (
+    <>
+      <SectionBar>単語帳:{title ?? `セット${setNumber}`}</SectionBar>
+      <div className="px-4 py-3">
+        <ProgressBar percent={(state.results.length / questions.length) * 100} />
+      </div>
+    </>
+  )
+
   if (state.phase === 'intro') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-6">
-        <p className="text-sm text-gray-500">セット{setNumber}</p>
-        <h1 className="text-2xl font-bold">{title ?? `セット${setNumber}`}</h1>
-        <p className="text-sm text-gray-600">全{questions.length}問。音声が流れます。</p>
-        <button
-          type="button"
-          data-testid="quiz-start"
-          onClick={actions.start}
-          className="rounded-full bg-blue-600 px-10 py-4 text-lg font-bold text-white active:bg-blue-700"
-        >
-          スタート
-        </button>
-      </main>
+      <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-md flex-col">
+        {heading}
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 bg-linear-to-b from-sky-400 via-sky-500 to-blue-700 px-6">
+          <p className="text-center text-lg font-bold text-white drop-shadow">
+            全{questions.length}問・音声が流れます
+          </p>
+          <button
+            type="button"
+            data-testid="quiz-start"
+            onClick={actions.start}
+            className="w-full max-w-sm rounded-full bg-linear-to-b from-[#fca42d] to-cta-dark py-5 text-2xl font-bold text-white shadow-[0_6px_0_rgba(0,0,0,0.3)] active:translate-y-0.5 active:shadow-none"
+          >
+            問題を始める
+          </button>
+        </div>
+      </div>
     )
   }
 
   if (state.phase === 'finished' && result) {
-    return <ResultView setNumber={setNumber} questions={questions} result={result} />
+    return (
+      <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-md flex-col">
+        <ResultView setNumber={setNumber} questions={questions} result={result} />
+      </div>
+    )
   }
 
   const answering = state.phase === 'answering'
@@ -67,16 +85,18 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
     state.phase === 'correct' || state.phase === 'wrong' || state.phase === 'retry_ready'
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-4 p-4">
-      <header className="flex items-center justify-between text-sm text-gray-500">
-        <span>セット{setNumber}</span>
-        <span data-testid="quiz-progress">
+    <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-md flex-col">
+      {heading}
+
+      <div className="flex items-baseline justify-between border-y border-gray-200 px-4 py-2">
+        <span className="text-2xl font-bold">問題{state.qIndex + 1}</span>
+        <span data-testid="quiz-progress" className="text-sm text-gray-500">
           {state.qIndex + 1} / {questions.length}
         </span>
-      </header>
+      </div>
 
       {!revealing && (
-        <>
+        <div className="flex flex-1 flex-col gap-4 bg-linear-to-b from-sky-400 via-sky-500 to-blue-700 p-4">
           <SentenceWithBlank sentenceText={question.sentenceText} />
           <ChoiceButtons
             choices={choices}
@@ -94,11 +114,11 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
             data-testid="quiz-confirm"
             disabled={!answering || state.selected === null}
             onClick={actions.confirm}
-            className="mt-auto rounded-xl bg-blue-600 py-4 text-lg font-bold text-white disabled:bg-gray-300"
+            className="mt-auto w-full rounded-full bg-linear-to-b from-brand to-brand-dark py-4 text-xl font-bold text-white shadow-[0_5px_0_rgba(0,0,0,0.3)] active:translate-y-0.5 active:shadow-none disabled:from-gray-300 disabled:to-gray-400 disabled:shadow-none"
           >
             決定
           </button>
-        </>
+        </div>
       )}
 
       {revealing && (
@@ -114,6 +134,6 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
           onRetry={actions.retry}
         />
       )}
-    </main>
+    </div>
   )
 }

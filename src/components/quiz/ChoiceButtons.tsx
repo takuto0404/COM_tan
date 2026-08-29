@@ -1,4 +1,4 @@
-/** 音声4択の選択肢ボタン(No.1〜No.4)。タップで選択+個別再生 */
+/** 音声4択の選択肢ボタン(No1〜No4)。タップで選択+個別再生 */
 import type { QuizChoice } from '@/domain/quiz/types'
 
 export function ChoiceButtons({
@@ -19,7 +19,7 @@ export function ChoiceButtons({
   onTap: (no: number) => void
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="grid grid-cols-4 gap-2.5">
       {choices.map((choice, i) => {
         const no = i + 1
         const isPlaying = playingChoice === no
@@ -34,14 +34,14 @@ export function ChoiceButtons({
             disabled={disabled}
             onClick={() => onTap(no)}
             aria-pressed={isSelected}
-            className={`flex min-h-24 flex-col items-center justify-center gap-1 rounded-xl border-2 p-3 text-lg font-bold transition-colors ${
+            className={`flex min-h-16 flex-col items-center justify-center rounded-xl border text-lg font-bold shadow-[0_3px_0_rgba(0,0,0,0.2)] transition-all active:translate-y-0.5 active:shadow-none ${
               isSelected
-                ? 'border-blue-600 bg-blue-50 text-blue-700'
-                : 'border-gray-200 bg-white text-gray-800'
-            } ${isPlaying ? 'ring-4 ring-amber-300' : ''} disabled:opacity-60`}
+                ? 'border-brand bg-brand text-white'
+                : 'border-gray-300 bg-linear-to-b from-white to-gray-200 text-gray-800'
+            } ${isPlaying ? 'ring-4 ring-accent' : ''} disabled:opacity-70`}
           >
-            <span>No.{no}</span>
-            <span aria-hidden className="text-xl">
+            <span>No{no}</span>
+            <span aria-hidden className="text-sm leading-none">
               {isPlaying ? '🔊' : '♪'}
             </span>
           </button>
