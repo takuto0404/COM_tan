@@ -36,9 +36,8 @@ export type QuizPhase =
   | 'intro' // スタート待ち(タップで音声アンロック)
   | 'playing_choices' // No.1→4 の選択肢音声を自動順次再生中
   | 'answering' // 回答受付中(個別再生・選択・決定)
-  | 'correct' // 正解表示+イメージ画像+例文音声再生
-  | 'wrong' // 誤答: 答え+イメージ画像表示+例文音声再生
-  | 'retry_ready' // 音声を聞き終え、同一問題のやり直し待ち
+  | 'correct' // 正解表示+イメージ画像(例文は再生ボタンで再生)
+  | 'wrong' // 誤答: 答え+イメージ画像表示(例文は再生ボタンで再生)、やり直し可
   | 'finished' // 10問完走
 
 export interface QuizState {
@@ -55,8 +54,8 @@ export interface QuizState {
   playingChoice: 1 | 2 | 3 | 4 | null
   /** 個別再生のリクエスト(seqの増加で再トリガー) */
   replay: { choice: number; seq: number } | null
-  /** correct/wrong の例文音声を聞き終えたか */
-  audioDone: boolean
+  /** 例文音声の再生リクエスト(correct/wrongで再生ボタン押下、seqの増加で再トリガー) */
+  sentencePlay: { seq: number } | null
   /** チップスの既読チェック */
   tipChecked: boolean
   /** 確定済みの問題結果 */
@@ -70,6 +69,8 @@ export type QuizEvent =
   | { type: 'REPLAY_CHOICE'; choice: number }
   | { type: 'CONFIRM' }
   | { type: 'TIP_CHECK' }
+  /** 解答表示中に例文音声を再生する(何度でも可) */
+  | { type: 'PLAY_SENTENCE' }
   | { type: 'NEXT' }
   /** やり直し。選択肢の表示順は変えない(同じ並びで再挑戦) */
   | { type: 'RETRY' }

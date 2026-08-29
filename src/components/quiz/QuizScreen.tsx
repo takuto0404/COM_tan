@@ -80,8 +80,7 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
     )
   }
 
-  const revealing =
-    state.phase === 'correct' || state.phase === 'wrong' || state.phase === 'retry_ready'
+  const revealing = state.phase === 'correct' || state.phase === 'wrong'
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-md flex-col">
@@ -129,8 +128,9 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
           imageUrl={images.resolveUrl(question.imagePath)}
           tipChecked={state.tipChecked}
           canNext={canNext}
-          canRetry={state.phase === 'retry_ready'}
+          canRetry={state.phase === 'wrong'}
           onTipCheck={actions.tipCheck}
+          onPlaySentence={actions.playSentence}
           onNext={actions.next}
           onRetry={actions.retry}
         />

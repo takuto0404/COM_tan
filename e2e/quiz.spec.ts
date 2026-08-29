@@ -74,7 +74,17 @@ test('誤答フロー: 答えと画像が表示され、同じ問題をやり直
   expect(selectedWord).toBeTruthy()
   expect(selectedWord).not.toBe(answerWord)
 
-  // 例文音声を聞き終えたらやり直せる(同じ問題: 進捗は 1/10 のまま)
+  // 再生ボタンを押したときだけ例文音声が再生される
+  await page.getByTestId('quiz-play-sentence').click()
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.__test?.audio.played.filter((p) => p.includes('sentences')).length,
+      ),
+    )
+    .toBeGreaterThan(0)
+
+  // すぐにやり直せる(同じ問題: 進捗は 1/10 のまま)
   const retry = page.getByTestId('quiz-retry')
   await expect(retry).toBeEnabled()
   await retry.click()

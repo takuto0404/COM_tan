@@ -55,7 +55,7 @@ describe('useQuizSession', () => {
     expect(audio.played).toEqual(result.current.choices.map((c) => c.audioPath))
   })
 
-  it('正解を確定すると例文音声が再生され、次へ進める', async () => {
+  it('正解を確定するとすぐ次へ進め、再生ボタンで例文音声が再生される', async () => {
     const { result, audio } = setup()
     act(() => result.current.actions.start())
     await waitFor(() => expect(result.current.state.phase).toBe('answering'))
@@ -64,13 +64,17 @@ describe('useQuizSession', () => {
       result.current.actions.select(correctNo)
       result.current.actions.confirm()
     })
-    await waitFor(() => expect(result.current.canNext).toBe(true))
-    expect(audio.played).toContain('s1.mp3')
+    // 例文は自動再生されない
+    expect(result.current.canNext).toBe(true)
+    expect(audio.played).not.toContain('s1.mp3')
+    // 再生ボタンで例文が再生される
+    act(() => result.current.actions.playSentence())
+    await waitFor(() => expect(audio.played).toContain('s1.mp3'))
     act(() => result.current.actions.next())
     await waitFor(() => expect(result.current.state.qIndex).toBe(1))
   })
 
-  it('誤答すると例文音声の後にやり直し待ちになり、retryで再挑戦できる', async () => {
+  it('誤答するとすぐやり直しでき、retryで同じ問題に再挑戦する', async () => {
     const { result } = setup()
     act(() => result.current.actions.start())
     await waitFor(() => expect(result.current.state.phase).toBe('answering'))
@@ -79,7 +83,7 @@ describe('useQuizSession', () => {
       result.current.actions.select(wrongNo)
       result.current.actions.confirm()
     })
-    await waitFor(() => expect(result.current.state.phase).toBe('retry_ready'))
+    expect(result.current.state.phase).toBe('wrong')
     act(() => result.current.actions.retry())
     await waitFor(() => expect(result.current.state.phase).toBe('answering'))
     expect(result.current.state.qIndex).toBe(0) // 同じ問題

@@ -28,7 +28,7 @@ export function createInitialState(
     selected: null,
     playingChoice: null,
     replay: null,
-    audioDone: false,
+    sentencePlay: null,
     tipChecked: false,
     results: [],
   }
@@ -51,10 +51,9 @@ export function orderedChoices(state: QuizState) {
   return state.orders[state.qIndex].map((i) => q.choices[i])
 }
 
-/** 「次へ」を押せるか(正解表示中: 例文音声を聞き終え、チップスがあれば既読チェック済み) */
+/** 「次へ」を押せるか(正解表示中: チップスがあれば既読チェック済み) */
 export function canGoNext(state: QuizState): boolean {
   if (state.phase !== 'correct') return false
-  if (!state.audioDone) return false
   if (currentQuestion(state).tip !== null && !state.tipChecked) return false
   return true
 }
@@ -88,10 +87,9 @@ export function quizReducer(state: QuizState, event: QuizEvent): QuizState {
           // 個別再生の完了
           return state.replay ? { ...state, replay: null } : state
         case 'correct':
-          return { ...state, audioDone: true }
         case 'wrong':
-          // 例文音声を1周聞き終えたらやり直し可能に
-          return { ...state, phase: 'retry_ready', audioDone: true }
+          // 例文音声(再生ボタン)の完了
+          return state.sentencePlay ? { ...state, sentencePlay: null } : state
         default:
           return state
       }
@@ -130,7 +128,7 @@ export function quizReducer(state: QuizState, event: QuizEvent): QuizState {
           ...state,
           phase: 'correct',
           attempts,
-          audioDone: false,
+          sentencePlay: null,
           tipChecked: false,
           results: [
             ...state.results,
@@ -142,13 +140,18 @@ export function quizReducer(state: QuizState, event: QuizEvent): QuizState {
           ],
         }
       }
-      return { ...state, phase: 'wrong', attempts, audioDone: false }
+      return { ...state, phase: 'wrong', attempts, sentencePlay: null }
     }
 
     case 'TIP_CHECK': {
       if (state.phase !== 'correct') return state
       if (currentQuestion(state).tip === null) return state
       return { ...state, tipChecked: true }
+    }
+
+    case 'PLAY_SENTENCE': {
+      if (state.phase !== 'correct' && state.phase !== 'wrong') return state
+      return { ...state, sentencePlay: { seq: (state.sentencePlay?.seq ?? 0) + 1 } }
     }
 
     case 'NEXT': {
@@ -165,13 +168,13 @@ export function quizReducer(state: QuizState, event: QuizEvent): QuizState {
         selected: null,
         playingChoice: 1,
         replay: null,
-        audioDone: false,
+        sentencePlay: null,
         tipChecked: false,
       }
     }
 
     case 'RETRY': {
-      if (state.phase !== 'retry_ready') return state
+      if (state.phase !== 'wrong') return state
       // 表示順は変えない: 聞き比べた記憶を保ったまま同じ並びで再挑戦させる
       return {
         ...state,
@@ -179,7 +182,7 @@ export function quizReducer(state: QuizState, event: QuizEvent): QuizState {
         selected: null,
         playingChoice: 1,
         replay: null,
-        audioDone: false,
+        sentencePlay: null,
       }
     }
   }

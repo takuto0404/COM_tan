@@ -73,12 +73,15 @@ export function useQuizSession({
     }
   }, [state.phase, state.replay, choices, playGuarded])
 
-  // 正解・誤答時の例文音声(1回再生)
+  // 例文音声: 解答表示中に再生ボタンが押されたときのみ再生(自動再生しない)
   useEffect(() => {
-    if (state.phase === 'correct' || state.phase === 'wrong') {
+    if (
+      (state.phase === 'correct' || state.phase === 'wrong') &&
+      state.sentencePlay !== null
+    ) {
       playGuarded(question.sentenceAudioPath)
     }
-  }, [state.phase, state.qIndex, question.sentenceAudioPath, playGuarded])
+  }, [state.phase, state.sentencePlay, question.sentenceAudioPath, playGuarded])
 
   // アンマウント時に再生停止(進行中のplayの完了通知も無効化する)
   useEffect(() => {
@@ -107,6 +110,7 @@ export function useQuizSession({
   )
   const confirm = useCallback(() => dispatch({ type: 'CONFIRM' }), [])
   const tipCheck = useCallback(() => dispatch({ type: 'TIP_CHECK' }), [])
+  const playSentence = useCallback(() => dispatch({ type: 'PLAY_SENTENCE' }), [])
   const next = useCallback(() => dispatch({ type: 'NEXT' }), [])
   const retry = useCallback(() => dispatch({ type: 'RETRY' }), [])
 
@@ -116,6 +120,15 @@ export function useQuizSession({
     choices,
     canNext: canGoNext(state),
     result: state.phase === 'finished' ? setResult(state) : null,
-    actions: { start, select, replayChoice, confirm, tipCheck, next, retry },
+    actions: {
+      start,
+      select,
+      replayChoice,
+      confirm,
+      tipCheck,
+      playSentence,
+      next,
+      retry,
+    },
   }
 }

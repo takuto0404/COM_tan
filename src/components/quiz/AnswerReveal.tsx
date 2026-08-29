@@ -34,6 +34,7 @@ export function AnswerReveal({
   canNext,
   canRetry,
   onTipCheck,
+  onPlaySentence,
   onNext,
   onRetry,
 }: {
@@ -46,6 +47,8 @@ export function AnswerReveal({
   canNext: boolean
   canRetry: boolean
   onTipCheck: () => void
+  /** 例文音声の再生(何度でも可) */
+  onPlaySentence: () => void
   onNext: () => void
   onRetry: () => void
 }) {
@@ -106,6 +109,14 @@ export function AnswerReveal({
           answerLabel={question.answerLabel}
           variant="answer"
         />
+        <button
+          type="button"
+          data-testid="quiz-play-sentence"
+          onClick={onPlaySentence}
+          className="mx-auto w-56 rounded-full bg-linear-to-b from-brand to-brand-dark py-3 text-lg font-bold text-white shadow-[0_4px_0_rgba(0,0,0,0.3)] active:translate-y-0.5 active:shadow-none"
+        >
+          🔊 PLAY
+        </button>
       </div>
 
       {/* チップス(既読チェック必須) */}

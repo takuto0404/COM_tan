@@ -145,16 +145,9 @@ describe('誤答フロー(SPEC 4.3)', () => {
     expect(s.attempts).toBe(1)
   })
 
-  it('例文音声を聞き終えるまでやり直せない', () => {
-    const s = toWrong(makeState())
-    expect(quizReducer(s, { type: 'RETRY' })).toBe(s)
-  })
-
-  it('音声終了→RETRYで同一問題を同じ表示順のまま再挑戦する', () => {
+  it('RETRYで同一問題を同じ表示順のまま即やり直しできる', () => {
     const questions = [makeQuestion(1)]
     let s = toWrong(createInitialState(questions, [[2, 1, 0, 3]]))
-    s = quizReducer(s, { type: 'AUDIO_ENDED' })
-    expect(s.phase).toBe('retry_ready')
     s = quizReducer(s, { type: 'RETRY' })
     expect(s.phase).toBe('playing_choices')
     expect(s.playingChoice).toBe(1)
@@ -165,7 +158,6 @@ describe('誤答フロー(SPEC 4.3)', () => {
 
   it('やり直して正解しても初回正解にはならない', () => {
     let s = toWrong(makeState())
-    s = quizReducer(s, { type: 'AUDIO_ENDED' })
     s = quizReducer(s, { type: 'RETRY' })
     s = dispatchAll(s, [
       { type: 'AUDIO_ENDED' },
@@ -181,22 +173,40 @@ describe('誤答フロー(SPEC 4.3)', () => {
 })
 
 describe('正解後の進行とチップス(SPEC 4.3)', () => {
-  it('例文音声を聞き終えるまで次へ進めない', () => {
+  it('チップスがなければ正解後すぐに次へ進める', () => {
     let s = toAnswering(makeState())
     s = dispatchAll(s, [{ type: 'SELECT', choice: 1 }, { type: 'CONFIRM' }])
-    expect(canGoNext(s)).toBe(false)
-    expect(quizReducer(s, { type: 'NEXT' })).toBe(s)
-    s = quizReducer(s, { type: 'AUDIO_ENDED' })
     expect(canGoNext(s)).toBe(true)
+  })
+
+  it('例文音声は再生ボタンで再生され、完了でクリアされる', () => {
+    let s = toAnswering(makeState())
+    s = dispatchAll(s, [{ type: 'SELECT', choice: 1 }, { type: 'CONFIRM' }])
+    expect(s.sentencePlay).toBeNull() // 自動再生しない
+    s = quizReducer(s, { type: 'PLAY_SENTENCE' })
+    expect(s.sentencePlay).toEqual({ seq: 1 })
+    s = quizReducer(s, { type: 'PLAY_SENTENCE' })
+    expect(s.sentencePlay).toEqual({ seq: 2 }) // 何度でも再生できる
+    s = quizReducer(s, { type: 'AUDIO_ENDED' })
+    expect(s.sentencePlay).toBeNull()
+  })
+
+  it('誤答表示中も再生ボタンで例文を再生できる', () => {
+    let s = toAnswering(makeState())
+    s = dispatchAll(s, [{ type: 'SELECT', choice: 2 }, { type: 'CONFIRM' }])
+    expect(s.phase).toBe('wrong')
+    s = quizReducer(s, { type: 'PLAY_SENTENCE' })
+    expect(s.sentencePlay).toEqual({ seq: 1 })
+  })
+
+  it('回答受付中のPLAY_SENTENCEは無視される', () => {
+    const s = toAnswering(makeState())
+    expect(quizReducer(s, { type: 'PLAY_SENTENCE' })).toBe(s)
   })
 
   it('チップスがある問題は既読チェックまで次へ進めない', () => {
     let s = toAnswering(makeState(3, ['覚え方のコツ']))
-    s = dispatchAll(s, [
-      { type: 'SELECT', choice: 1 },
-      { type: 'CONFIRM' },
-      { type: 'AUDIO_ENDED' },
-    ])
+    s = dispatchAll(s, [{ type: 'SELECT', choice: 1 }, { type: 'CONFIRM' }])
     expect(canGoNext(s)).toBe(false)
     expect(quizReducer(s, { type: 'NEXT' })).toBe(s)
     s = quizReducer(s, { type: 'TIP_CHECK' })
@@ -208,11 +218,7 @@ describe('正解後の進行とチップス(SPEC 4.3)', () => {
 
   it('チップスがない問題でTIP_CHECKは無視される', () => {
     let s = toAnswering(makeState())
-    s = dispatchAll(s, [
-      { type: 'SELECT', choice: 1 },
-      { type: 'CONFIRM' },
-      { type: 'AUDIO_ENDED' },
-    ])
+    s = dispatchAll(s, [{ type: 'SELECT', choice: 1 }, { type: 'CONFIRM' }])
     expect(quizReducer(s, { type: 'TIP_CHECK' })).toBe(s)
   })
 
@@ -221,7 +227,6 @@ describe('正解後の進行とチップス(SPEC 4.3)', () => {
     s = dispatchAll(s, [
       { type: 'SELECT', choice: 1 },
       { type: 'CONFIRM' },
-      { type: 'AUDIO_ENDED' },
       { type: 'NEXT' },
     ])
     expect(s.qIndex).toBe(1)
@@ -250,7 +255,6 @@ describe('完走', () => {
       if (i === 1) {
         // 2問目はわざと誤答→やり直し→正解
         s = dispatchAll(s, [
-          { type: 'AUDIO_ENDED' },
           { type: 'RETRY' },
           { type: 'AUDIO_ENDED' },
           { type: 'AUDIO_ENDED' },
@@ -260,7 +264,7 @@ describe('完走', () => {
           { type: 'CONFIRM' },
         ])
       }
-      s = dispatchAll(s, [{ type: 'AUDIO_ENDED' }, { type: 'NEXT' }])
+      s = quizReducer(s, { type: 'NEXT' })
     }
     expect(s.phase).toBe('finished')
     const result = setResult(s)
