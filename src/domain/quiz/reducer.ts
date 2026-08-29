@@ -98,8 +98,17 @@ export function quizReducer(state: QuizState, event: QuizEvent): QuizState {
     }
 
     case 'SELECT': {
-      if (state.phase !== 'answering') return state
       if (event.choice < 1 || event.choice > CHOICE_COUNT) return state
+      // 自動順次再生の途中でも選択できる: 再生を打ち切って回答受付へ移る
+      if (state.phase === 'playing_choices') {
+        return {
+          ...state,
+          phase: 'answering',
+          playingChoice: null,
+          selected: event.choice,
+        }
+      }
+      if (state.phase !== 'answering') return state
       return { ...state, selected: event.choice }
     }
 

@@ -89,9 +89,22 @@ describe('回答受付', () => {
     expect(quizReducer(s, { type: 'CONFIRM' })).toBe(s)
   })
 
-  it('自動再生中は選択・決定できない', () => {
+  it('自動再生の途中でも選択でき、再生を打ち切って回答受付になる', () => {
+    // No.2を再生中にタップ
+    let s = dispatchAll(makeState(), [{ type: 'START' }, { type: 'AUDIO_ENDED' }])
+    expect(s.playingChoice).toBe(2)
+    s = quizReducer(s, { type: 'SELECT', choice: 3 })
+    expect(s.phase).toBe('answering')
+    expect(s.selected).toBe(3)
+    expect(s.playingChoice).toBeNull() // 自動再生は打ち切り
+    // そのまま決定できる(表示順IDENTITYなのでNo.1が正解)
+    const wrong = quizReducer(s, { type: 'CONFIRM' })
+    expect(wrong.phase).toBe('wrong')
+  })
+
+  it('自動再生中の決定は無視される(未選択のため)', () => {
     const s = quizReducer(makeState(), { type: 'START' })
-    expect(quizReducer(s, { type: 'SELECT', choice: 1 })).toBe(s)
+    expect(quizReducer(s, { type: 'CONFIRM' })).toBe(s)
   })
 
   it('個別再生はansweringのみ有効で、AUDIO_ENDEDでクリアされる', () => {

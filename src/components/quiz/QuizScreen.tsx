@@ -80,7 +80,6 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
     )
   }
 
-  const answering = state.phase === 'answering'
   const revealing =
     state.phase === 'correct' || state.phase === 'wrong' || state.phase === 'retry_ready'
 
@@ -102,7 +101,8 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
             choices={choices}
             selected={state.selected}
             playingChoice={state.playingChoice}
-            disabled={!answering}
+            // 自動再生中でもタップ可(タップで再生を打ち切って回答受付へ)
+            disabled={false}
             testMode={TEST_MODE}
             onTap={(no) => {
               actions.select(no)
@@ -112,7 +112,7 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
           <button
             type="button"
             data-testid="quiz-confirm"
-            disabled={!answering || state.selected === null}
+            disabled={state.selected === null}
             onClick={actions.confirm}
             className="mt-auto w-full rounded-full bg-linear-to-b from-brand to-brand-dark py-4 text-xl font-bold text-white shadow-[0_5px_0_rgba(0,0,0,0.3)] active:translate-y-0.5 active:shadow-none disabled:from-gray-300 disabled:to-gray-400 disabled:shadow-none"
           >

@@ -40,10 +40,21 @@ async function goNext(page: Page) {
   await next.click()
 }
 
-test('選択肢4音声が自動再生されてから回答できる', async ({ page }) => {
-  await startQuiz(page)
-  const played = await page.evaluate(() => window.__test?.audio.played ?? [])
-  expect(played.length).toBe(4) // No.1〜No.4
+test('選択肢4音声が自動で順次再生される', async ({ page }) => {
+  await page.goto('/sets/1/play')
+  await page.getByTestId('quiz-start').click()
+  await expect
+    .poll(() => page.evaluate(() => window.__test?.audio.played.length ?? 0))
+    .toBe(4) // No.1〜No.4
+})
+
+test('自動再生を最後まで聞かなくても回答できる', async ({ page }) => {
+  await page.goto('/sets/1/play')
+  await page.getByTestId('quiz-start').click()
+  // 再生完了を待たずにタップ→決定(タップで自動再生は打ち切られる)
+  await page.locator('[data-testid^="quiz-choice-"][data-correct="1"]').click()
+  await page.getByTestId('quiz-confirm').click()
+  await expect(page.getByTestId('quiz-reveal')).toBeVisible()
 })
 
 test('誤答フロー: 答えと画像が表示され、同じ問題をやり直して正解で次へ進める (E3)', async ({
