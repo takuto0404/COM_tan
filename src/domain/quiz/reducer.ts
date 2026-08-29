@@ -163,12 +163,10 @@ export function quizReducer(state: QuizState, event: QuizEvent): QuizState {
 
     case 'RETRY': {
       if (state.phase !== 'retry_ready') return state
-      validateOrder(event.order)
-      const orders = state.orders.map((o, i) => (i === state.qIndex ? event.order : o))
+      // 表示順は変えない: 聞き比べた記憶を保ったまま同じ並びで再挑戦させる
       return {
         ...state,
         phase: 'playing_choices',
-        orders,
         selected: null,
         playingChoice: 1,
         replay: null,

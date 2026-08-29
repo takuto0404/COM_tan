@@ -134,25 +134,26 @@ describe('誤答フロー(SPEC 4.3)', () => {
 
   it('例文音声を聞き終えるまでやり直せない', () => {
     const s = toWrong(makeState())
-    expect(quizReducer(s, { type: 'RETRY', order: IDENTITY })).toBe(s)
+    expect(quizReducer(s, { type: 'RETRY' })).toBe(s)
   })
 
-  it('音声終了→RETRYで同一問題を新しい表示順で再挑戦する', () => {
-    let s = toWrong(makeState())
+  it('音声終了→RETRYで同一問題を同じ表示順のまま再挑戦する', () => {
+    const questions = [makeQuestion(1)]
+    let s = toWrong(createInitialState(questions, [[2, 1, 0, 3]]))
     s = quizReducer(s, { type: 'AUDIO_ENDED' })
     expect(s.phase).toBe('retry_ready')
-    s = quizReducer(s, { type: 'RETRY', order: [3, 2, 1, 0] })
+    s = quizReducer(s, { type: 'RETRY' })
     expect(s.phase).toBe('playing_choices')
     expect(s.playingChoice).toBe(1)
     expect(s.selected).toBeNull()
-    expect(s.orders[0]).toEqual([3, 2, 1, 0]) // 再シャッフル反映
+    expect(s.orders[0]).toEqual([2, 1, 0, 3]) // 表示順は変わらない
     expect(s.qIndex).toBe(0) // 同じ問題
   })
 
   it('やり直して正解しても初回正解にはならない', () => {
     let s = toWrong(makeState())
     s = quizReducer(s, { type: 'AUDIO_ENDED' })
-    s = quizReducer(s, { type: 'RETRY', order: IDENTITY })
+    s = quizReducer(s, { type: 'RETRY' })
     s = dispatchAll(s, [
       { type: 'AUDIO_ENDED' },
       { type: 'AUDIO_ENDED' },
@@ -237,7 +238,7 @@ describe('完走', () => {
         // 2問目はわざと誤答→やり直し→正解
         s = dispatchAll(s, [
           { type: 'AUDIO_ENDED' },
-          { type: 'RETRY', order: IDENTITY },
+          { type: 'RETRY' },
           { type: 'AUDIO_ENDED' },
           { type: 'AUDIO_ENDED' },
           { type: 'AUDIO_ENDED' },

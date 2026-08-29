@@ -71,8 +71,8 @@ export type QuizEvent =
   | { type: 'CONFIRM' }
   | { type: 'TIP_CHECK' }
   | { type: 'NEXT' }
-  /** やり直し。再シャッフルした表示順を受け取る(reducerを純粋に保つため) */
-  | { type: 'RETRY'; order: number[] }
+  /** やり直し。選択肢の表示順は変えない(同じ並びで再挑戦) */
+  | { type: 'RETRY' }
 
 export interface SetResult {
   results: QuestionResult[]

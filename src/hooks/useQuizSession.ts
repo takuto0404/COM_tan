@@ -32,11 +32,6 @@ export function useQuizSession({
   images,
   rng = Math.random,
 }: UseQuizSessionOptions) {
-  const rngRef = useRef(rng)
-  useEffect(() => {
-    rngRef.current = rng
-  }, [rng])
-
   const [state, dispatch] = useReducer(
     quizReducer,
     undefined,
@@ -113,10 +108,7 @@ export function useQuizSession({
   const confirm = useCallback(() => dispatch({ type: 'CONFIRM' }), [])
   const tipCheck = useCallback(() => dispatch({ type: 'TIP_CHECK' }), [])
   const next = useCallback(() => dispatch({ type: 'NEXT' }), [])
-  const retry = useCallback(
-    () => dispatch({ type: 'RETRY', order: shuffledOrder(4, rngRef.current) }),
-    [],
-  )
+  const retry = useCallback(() => dispatch({ type: 'RETRY' }), [])
 
   return {
     state,
