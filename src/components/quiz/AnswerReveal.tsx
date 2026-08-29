@@ -28,6 +28,7 @@ function Badge({ correct }: { correct: boolean }) {
 export function AnswerReveal({
   question,
   correct,
+  selectedLabel,
   imageUrl,
   tipChecked,
   canNext,
@@ -38,6 +39,8 @@ export function AnswerReveal({
 }: {
   question: QuizQuestion
   correct: boolean
+  /** 回答時に選択していた(音声が流れていた)単語の表記 */
+  selectedLabel: string
   imageUrl: string
   tipChecked: boolean
   canNext: boolean
@@ -52,10 +55,28 @@ export function AnswerReveal({
       <div className="flex items-center gap-5 border-b border-gray-200 px-4 py-4">
         <Badge correct={correct} />
         <div data-testid={correct ? 'quiz-correct' : 'quiz-wrong'}>
-          <p className="text-sm text-gray-500">正解の英単語</p>
-          <p data-testid="quiz-answer" className="text-4xl font-bold text-emphasis">
-            {question.headword}
-          </p>
+          {correct ? (
+            <>
+              <p className="text-sm text-gray-500">選択した英単語</p>
+              <p data-testid="quiz-answer" className="text-4xl font-bold text-emphasis">
+                {question.headword}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-gray-500">選択した英単語</p>
+              <p
+                data-testid="quiz-selected"
+                className="text-2xl font-bold text-brand line-through decoration-2"
+              >
+                {selectedLabel}
+              </p>
+              <p className="mt-1 text-sm text-gray-500">正解の英単語</p>
+              <p data-testid="quiz-answer" className="text-4xl font-bold text-emphasis">
+                {question.headword}
+              </p>
+            </>
+          )}
         </div>
       </div>
 

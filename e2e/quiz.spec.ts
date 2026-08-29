@@ -57,6 +57,12 @@ test('誤答フロー: 答えと画像が表示され、同じ問題をやり直
   await expect(page.getByTestId('quiz-image')).toBeVisible()
   await expect(page.getByTestId('quiz-sentence')).not.toContainText('____')
 
+  // 選択していた(音声が流れていた)単語も表示され、正解とは異なる
+  const selectedWord = await page.getByTestId('quiz-selected').textContent()
+  const answerWord = await page.getByTestId('quiz-answer').textContent()
+  expect(selectedWord).toBeTruthy()
+  expect(selectedWord).not.toBe(answerWord)
+
   // 例文音声を聞き終えたらやり直せる(同じ問題: 進捗は 1/10 のまま)
   const retry = page.getByTestId('quiz-retry')
   await expect(retry).toBeEnabled()

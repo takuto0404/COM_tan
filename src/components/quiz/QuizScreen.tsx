@@ -125,6 +125,7 @@ export function QuizScreen({ setNumber, title, questions, urls }: QuizScreenProp
         <AnswerReveal
           question={question}
           correct={state.phase === 'correct'}
+          selectedLabel={state.selected !== null ? choices[state.selected - 1].label : ''}
           imageUrl={images.resolveUrl(question.imagePath)}
           tipChecked={state.tipChecked}
           canNext={canNext}
